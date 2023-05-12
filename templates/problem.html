@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Problem</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" class="css">
+</head>
+<body>
+<div class="task-container">
+    <div class="task-description">
+            <h1>{{ problem.name }}</h1>
+            <p>{{ problem.description }}</p>
+
+            <h2>Input data</h2>
+            <p>{{ problem.input_data }}</p>
+
+            <h2>Output data</h2>
+            <p>{{ problem.input_data }}</p>
+    </div>
+
+            <div class="examples">
+                <h2>Examples</h2>
+                {% for example in problem.examples %}
+                <div class="example">
+                    <p>Input: {{ example.input }}</p>
+                    <p>Output: {{ example.output }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+<div class="container">
+    <form class="main-form" action="/submit" data-id="1">
+        <div class="code-container">
+            <h2>Your solution</h2>
+            <textarea class="code" name="" id="" cols="50" rows="30"></textarea>
+            <input type="submit" value="Submit">
+        </div>
+    </form>
+
+    <div class="chat">
+        <h2>Chat</h2>
+        <div id="chat-box"></div>
+        <form id="chat-form">
+
+            <input id="user-input" type="text" placeholder="Enter your message" required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+</div>
+
+    <script>
+        function addMessage(role, name, content) {
+            var chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += '<p>' + name + ': ' + content + '</p>';
+            chatBox.scrollTop = chatBox.scrollHeight;
+            chatHistory.push({role: role, content: content});
+        }
+
+        var chatHistory = [];
+        chatHistory.push({role: 'system', content: `You are a patient and knowledgeable programming tutor.
+                                           Your goal is to guide the user towards finding the solution to their problem through a series of hints, questions, and explanations.
+                                           Do not provide the direct answer, but rather help the user understand the problem and its solution better.
+                                           Encourage independent thinking and facilitate learning.
+                                           You are helping user to solve {{problem.description}} problem
+                                           Input data: {{ problem.input_data }}
+                                           Output data: {{ problem.output_data }}
+                                           Example: {{ problem.examples[0].input }} -> {{ problem.examples[0].output }}
+                                           Please be very concise.`});
+
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var userInput = document.getElementById('user-input').value;
+
+                addMessage('user', 'user', userInput);
+                document.getElementById('user-input').value = '';
+
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 'history': chatHistory, problem_id: {{ problem.id }}, 'code': document.querySelector('textarea.code').value  })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    addMessage('assistant', 'GPT', data.reply)
+                });
+            });
+    </script>
+
+<script>
+    // on cick submit send post to /submit_solution with textarea value as solution_code and problem_id
+    document.querySelector('input[type="submit"]').addEventListener('click', function (e) {
+        e.preventDefault();
+        const solution_code = document.querySelector('textarea').value;
+        const problem_id = document.querySelector('form').dataset.id;
+        chatHistory.push({role: 'system', content: `User submitted solution ${solution_code}`});
+        fetch('/submit_solution', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({solution_code, problem_id})
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // from all data elements construct string
+                let result = '';
+                for (let i = 0; i < data.length; i++) {
+                    let test = data[i]
+                    if (test['passed'] === false) {
+                        result += "Test failed for input: " + data[i].input + " your output:" + data[i].output
+                        if (test['error'] !== null) {
+                            result += " with error: " + test['error']
+                        }
+                        result += "\n"
+                    }
+                }
+                if (result === '') {
+                    result = 'All tests passed!'
+                }
+                addMessage('system', 'GPT', result)
+            })
+    })
+</script>
+</body>
+</html>

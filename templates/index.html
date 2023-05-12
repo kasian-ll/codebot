@@ -2,55 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Problems</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" class="css">
 </head>
 <body>
-<form class="main-form" action="/submit" data-id="1">
-    <div class="task-container">
-        <h1>{{ problem.name }}</h1>
+<div class="problems-container">
+
+    {% for problem in problems %}
+     <a class="problem" href="/problem/{{ problem.id }}">
+        <h2>{{ problem.name }}</h2>
         <p>{{ problem.description }}</p>
+     </a>
+    {% endfor %}
 
-        <h2>Input data</h2>
-        <p>{{ problem.input_data }}</p>
-
-        <h2>Output data</h2>
-        <p>{{ problem.input_data }}</p>
-
-        <h2>Examples</h2>
-        <div class="examples">
-            {% for example in problem.examples %}
-            <div class="example">
-                <p>Input: {{ example.input }}</p>
-                <p>Output: {{ example.output }}</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    <div class="code-container">
-        <h2>Your solution</h2>
-        <textarea name="" id="" cols="50" rows="30"></textarea>
-        <input type="submit" value="Submit">
-    </div>
-</form>
-<script>
-    // on cick submit send post to /submit_solution with textarea value as solution_code and problem_id
-    document.querySelector('input[type="submit"]').addEventListener('click', function (e) {
-        e.preventDefault();
-        const solution_code = document.querySelector('textarea').value;
-        const problem_id = document.querySelector('form').dataset.id;
-        fetch('/submit_solution', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({solution_code, problem_id})
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-            })
-    })
-</script>
+</div>
 </body>
 </html>

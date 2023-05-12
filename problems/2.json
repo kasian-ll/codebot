@@ -1,0 +1,34 @@
+{
+  "name": "Task #2",
+  "description": "Find the number of digits in a nonnegative integer n.",
+  "input_data": "One nonnegative integer n (0 ≤ n ≤ 2 * 10^9).",
+  "output_data": "Print the number of digits in number n.",
+  "examples": [
+    {
+      "input": "123",
+      "output": "3"
+    },
+    {
+      "input": "0",
+      "output": "1"
+    },
+    {
+      "input": "1000000000",
+      "output": "10"
+    }
+  ],
+    "tests": [
+        {
+        "input": "123",
+        "output": "3"
+        },
+        {
+        "input": "0",
+        "output": "1"
+        },
+        {
+        "input": "1000000000",
+        "output": "10"
+        }
+    ]
+}
